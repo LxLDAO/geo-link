@@ -1,6 +1,6 @@
 {
-  "name": "nextjs-ethereum-starter-frontend",
-  "author": "@huntarosan",
+  "name": "frontend",
+  "author": "@geolink",
   "license": "MIT",
   "version": "1.0.0",
   "scripts": {

@@ -1,6 +1,6 @@
 {
-  "name": "nextjs-ethereum-starter-hardhat",
-  "author": "@huntarosan",
+  "name": "hardhat",
+  "author": "@geolink",
   "license": "MIT",
   "version": "1.0.0",
   "scripts": {
