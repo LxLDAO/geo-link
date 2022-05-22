@@ -24,6 +24,13 @@ yarn-error.log*
 .vercel
 
 node_modules
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 ## Hardhat files ##
 packages/hardhat/*.txt
