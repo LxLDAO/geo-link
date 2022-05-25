@@ -1,4 +1,4 @@
-import { Container, Flex, Link, Text } from '@chakra-ui/react'
+import { Container, Flex, Link, Box } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import React from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
@@ -19,38 +19,19 @@ const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   return (
     <>
       <Head customMeta={customMeta} />
-      <header>
+      <Box as="header" position="fixed" width="100vw" zIndex={10}>
         <Container maxWidth="container.xl">
-          <Flex alignItems="center" justifyContent="space-between" py="8">
-            <Flex py={[4, null, null, 0]}>
-              <NextLink href="/" passHref>
-                <Link px="4" py="1">
-                  Home
-                </Link>
-              </NextLink>
-              <NextLink href="/graph-example" passHref>
-                <Link px="4" py="1">
-                  Graph Example
-                </Link>
-              </NextLink>
-              <NextLink href="/signature-example" passHref>
-                <Link px="4" py="1">
-                  Signature Example
-                </Link>
-              </NextLink>
-            </Flex>
-            <ConnectButton showBalance  />
+          <Flex alignItems="center" justifyContent="center" py="8">
+            <ConnectButton showBalance />
           </Flex>
         </Container>
-      </header>
-      <main>
-        <Container maxWidth="container.xl">{children}</Container>
-      </main>
-      <footer>
+      </Box>
+      <Box as="main">{children}</Box>
+      {/* <footer>
         <Container mt="8" py="8" maxWidth="container.xl">
           <Text>I{"'"}m a empty footer</Text>
         </Container>
-      </footer>
+      </footer> */}
     </>
   )
 }

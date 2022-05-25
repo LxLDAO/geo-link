@@ -1,5 +1,12 @@
 import { gql, useQuery } from '@apollo/client'
-import { Alert, AlertIcon, Box, Heading, Text } from '@chakra-ui/react'
+import {
+  Alert,
+  AlertIcon,
+  Box,
+  Container,
+  Heading,
+  Text,
+} from '@chakra-ui/react'
 import Layout from '../components/layout/Layout'
 
 const COMPOUND_MARKETS = gql`
@@ -18,32 +25,34 @@ function GraphExampleIndex(): JSX.Element {
 
   return (
     <Layout>
-      <Heading as="h1" mb="12">
-        The Graph Query Page
-      </Heading>
-      {loading && (
-        <Alert status="warning">
-          <AlertIcon />
-          ... Loading
-        </Alert>
-      )}
-      {error && (
-        <Alert status="error">
-          <AlertIcon />
-          There was an error processing your request
-        </Alert>
-      )}
-      {!loading &&
-        !error &&
-        data.markets.map(
-          ({ id, underlyingName, underlyingSymbol, underlyingPriceUSD }) => (
-            <Box key={id} mt="8">
-              <Text>Name: {underlyingName}</Text>
-              <Text>Symbol: {underlyingSymbol}</Text>
-              <Text>Price: ${underlyingPriceUSD}</Text>
-            </Box>
-          )
+      <Container pt={24} px={12}>
+        <Heading as="h1" mb="12">
+          The Graph Query Page
+        </Heading>
+        {loading && (
+          <Alert status="warning">
+            <AlertIcon />
+            ... Loading
+          </Alert>
         )}
+        {error && (
+          <Alert status="error">
+            <AlertIcon />
+            There was an error processing your request
+          </Alert>
+        )}
+        {!loading &&
+          !error &&
+          data.markets.map(
+            ({ id, underlyingName, underlyingSymbol, underlyingPriceUSD }) => (
+              <Box key={id} mt="8">
+                <Text>Name: {underlyingName}</Text>
+                <Text>Symbol: {underlyingSymbol}</Text>
+                <Text>Price: ${underlyingPriceUSD}</Text>
+              </Box>
+            )
+          )}
+      </Container>
     </Layout>
   )
 }
