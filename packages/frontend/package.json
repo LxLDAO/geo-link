@@ -30,8 +30,6 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@rainbow-me/rainbowkit": "^0.1.1",
-    "@web3-react/walletconnect-connector": "^6.2.0",
-    "@web3-react/walletlink-connector": "^6.2.3",
     "blockies-ts": "^1.0.0",
     "deepmerge": "^4.2.2",
     "ethers": "^5.6.7",
