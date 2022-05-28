@@ -31,7 +31,7 @@ function HomeIndex(): JSX.Element {
           <Map
             amapkey={'788e08def03f95c670944fe2c78fa76f'}
             // TODO: Get user location and set map center to it
-            zoom={16}
+            zoom={14}
             plugins={mapPlugins}
           >
             <Marker position={{ longitude: 120, latitude: 35 }} />
