@@ -2684,6 +2684,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@openzeppelin/contracts-upgradeable@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "@openzeppelin/contracts-upgradeable@npm:4.6.0"
+  checksum: f9802c9cccf31bd475412ba5d862ed15eed5352302c30b29c38f84aed2dcfe0d957687935a72068f3d44292a4a55b0ff26cd018b2e14a47f16f74f087009aa29
+  languageName: node
+  linkType: hard
+
 "@openzeppelin/contracts@npm:^4.6.0":
   version: 4.6.0
   resolution: "@openzeppelin/contracts@npm:4.6.0"
@@ -9687,6 +9694,7 @@ __metadata:
     "@nomiclabs/hardhat-ethers": ^2.0.2
     "@nomiclabs/hardhat-waffle": ^2.0.1
     "@openzeppelin/contracts": ^4.6.0
+    "@openzeppelin/contracts-upgradeable": ^4.6.0
     "@typechain/ethers-v5": ^7.0.1
     "@typechain/hardhat": ^2.0.2
     "@types/chai": ^4.2.18
@@ -14461,6 +14469,13 @@ __metadata:
     iconv-lite: 0.4.24
     unpipe: 1.0.0
   checksum: 5362adff1575d691bb3f75998803a0ffed8c64eabeaa06e54b4ada25a0cd1b2ae7f4f5ec46565d1bec337e08b5ac90c76eaa0758de6f72a633f025d754dec29e
+  languageName: node
+  linkType: hard
+
+"react-amap@npm:^1.2.8":
+  version: 1.2.8
+  resolution: "react-amap@npm:1.2.8"
+  checksum: 3d4a519491a59acb7c97487d2313804331c7113e3203c1b09323e4510e52b7e204c3a8512e5791111ec86a9a1fa3075e4f9b87bf23e6b082a51bbbf6951625e3
   languageName: node
   linkType: hard
 
