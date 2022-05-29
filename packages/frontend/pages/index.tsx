@@ -85,7 +85,7 @@ function HomeIndex(): JSX.Element {
         }
       )
     }
-  })
+  }, [])
 
   const getLands = useCallback(
     async (start: number, count: number) => {
