@@ -1,6 +1,7 @@
 import '@rainbow-me/rainbowkit/styles.css'
 import { ApolloProvider } from '@apollo/client'
 import { ChakraProvider } from '@chakra-ui/react'
+import './index.less';
 import {
   RainbowKitProvider,
   apiProvider,

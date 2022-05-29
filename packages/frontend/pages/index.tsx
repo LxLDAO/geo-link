@@ -41,6 +41,7 @@ function HomeIndex(): JSX.Element {
   const [pos, setPos] = useState({lat: 0, lng: 0});
   const [start, setStart] = useState(0);
   const [count, setCount] = useState(0);
+  const [selected, setSelected] = useState(0);
   const [lands, setLands] = useState([]);
   useEffect(() => {    
     if (navigator.geolocation){
@@ -60,15 +61,24 @@ function HomeIndex(): JSX.Element {
     // getLands(start, count);
   });
 
-  // async function getLands(start: number, count: number) {
-  //   let lands = [];
-  //   for (let i = start; i <= count; i++) {
-  //     let land = await meetContract.allLands(i)
-  //     lands.push(land)
-  //   }
-  //   console.log(lands)
-  //   setLands(lands);
-  // }
+  async function getLands(start: number, count: number) {
+    let lands = [];
+    for (let i = start; i <= count; i++) {
+      let land = await meetContract.allLands(i)
+      lands.push(land)
+    }
+    console.log(lands)
+    setLands(lands);
+    // selected = 1;
+  }
+
+  function lightLands(start: number, count: number) {
+    try {
+      await meetContract.lightLand([pos.lat, pos.lng])
+    } catch(e) {
+      console.log(e)
+    }
+  }
 
   return (
     <Layout>
@@ -80,6 +90,28 @@ function HomeIndex(): JSX.Element {
             zoom={14}
             plugins={mapPlugins}
           >
+            {/* cards index.less */}
+            {
+              // selected > 0 && (
+              // <div class="card">
+              //   <div class="avatar"><img src={lands[i].url}></></div>
+              //   <div class="card-content">
+              //     <div class="card-header">
+              //       <p class="card-header-title">{lands[i].name}</p>
+              //       <p class="card-header-price">{lands[i].price}</p> 
+              //     </div>
+              //     <div class="card-body">
+              //       lands[i].guests.map(
+              //         (friend) => (
+              //           <p class="card-friends">friend.substr(2,4)</p>
+              //         )
+              //       )
+              //     </div>
+              //   </div>
+              // </div>
+              // )
+            }
+
             {/* {
               lands && lands.map(
                 ({ host, guests, name, url, typ, pos, price }) => (
@@ -88,7 +120,7 @@ function HomeIndex(): JSX.Element {
               )
             } */}
             <Marker position={{ longitude: pos.lng, latitude: pos.lat }}>
-              <div style={styleC}>{1}</div>
+              <div style={styleC} onClick="lightLand">{1}</div>
             </Marker>
           </Map>
         </Box>
