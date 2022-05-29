@@ -3,7 +3,7 @@ import Meet from '../artifacts/contracts/Meet.sol/MeetSH.json'
 import Multi from '../artifacts/contracts/Multicall.sol/Multicall.json'
 import { Box } from '@chakra-ui/react'
 import { Map, Marker, PluginConfig, PluginList } from 'react-amap'
-import { useAccount, useContract, useSigner } from 'wagmi'
+import { useContract, useSigner } from 'wagmi'
 
 import Layout from '../components/layout/Layout'
 
@@ -58,6 +58,7 @@ function HomeIndex(): JSX.Element {
     let start = await meetContract.landStart();
     let count = await meetContract.landCount();
     console.log(start, count);
+    // 获取所有地块
     // getLands(start, count);
   });
 
@@ -69,10 +70,10 @@ function HomeIndex(): JSX.Element {
     }
     console.log(lands)
     setLands(lands);
-    // selected = 1;
   }
 
-  function lightLands(start: number, count: number) {
+  // 用户点亮地块，参数是经纬度
+  function lightLand() {
     try {
       meetContract.lightLand([pos.lat, pos.lng])
     } catch(e) {
@@ -92,6 +93,7 @@ function HomeIndex(): JSX.Element {
           >
             {/* cards index.less */}
             {
+              // 如果选中，则在上面显示一个地块信息
               // selected > 0 && (
               // <div class="card">
               //   <div class="avatar"><img src={lands[i].url}></></div>
@@ -112,14 +114,19 @@ function HomeIndex(): JSX.Element {
               // )
             }
 
-            {/* {
+            {
+            // 地块显示, onclick如果成功显示卡片
+            /* {
               lands && lands.map(
                 ({ host, guests, name, url, typ, pos, price }) => (
                   <Marker position={{ longitude: pos.lat, latitude: pos.lng }} />
                 )
               )
             } */}
-            <Marker position={{ longitude: pos.lng, latitude: pos.lat }}>
+            {
+            // 查看地图可设置 114.129 22.619, onclick 可打卡 lightLand
+            }
+            <Marker position={{ longitude: pos.lng, latitude: pos.lat }}> 
               <div style={styleC}>{1}</div>
             </Marker>
           </Map>
