@@ -12,54 +12,94 @@ import {
   BaseContract,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
-import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
+import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface MeetSHInterface extends ethers.utils.Interface {
   functions: {
-    "addLocation(tuple[])": FunctionFragment;
-    "hasLocation(int32,int32)": FunctionFragment;
+    "addLands(tuple[])": FunctionFragment;
+    "allLands(uint256)": FunctionFragment;
+    "buyLand(uint256,string,string)": FunctionFragment;
+    "changeType(uint256,uint8)": FunctionFragment;
+    "landCount()": FunctionFragment;
+    "landStart()": FunctionFragment;
     "lastLight(address)": FunctionFragment;
-    "lightLocation(tuple)": FunctionFragment;
-    "locations(uint256)": FunctionFragment;
-    "ownedLocations(address,uint256)": FunctionFragment;
+    "lightLand((int32,int32))": FunctionFragment;
+    "mintLand((int32,int32),string,string,uint8)": FunctionFragment;
+    "modLand(uint256,string,string)": FunctionFragment;
+    "modPrice(uint256,uint256)": FunctionFragment;
+    "ownedLands(address,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
+    "posLand(int32,int32)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "withdraw()": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "addLocation",
+    functionFragment: "addLands",
     values: [
       {
-        lord: string;
+        host: string;
+        guests: string[];
         name: string;
-        pos: { x: BigNumberish; y: BigNumberish };
+        url: string;
+        typ: BigNumberish;
+        pos: { lat: BigNumberish; lng: BigNumberish };
+        price: BigNumberish;
       }[]
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "hasLocation",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(functionFragment: "lastLight", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "lightLocation",
-    values: [{ x: BigNumberish; y: BigNumberish }]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "locations",
+    functionFragment: "allLands",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "ownedLocations",
+    functionFragment: "buyLand",
+    values: [BigNumberish, string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "changeType",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "landCount", values?: undefined): string;
+  encodeFunctionData(functionFragment: "landStart", values?: undefined): string;
+  encodeFunctionData(functionFragment: "lastLight", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "lightLand",
+    values: [{ lat: BigNumberish; lng: BigNumberish }]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mintLand",
+    values: [
+      { lat: BigNumberish; lng: BigNumberish },
+      string,
+      string,
+      BigNumberish
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "modLand",
+    values: [BigNumberish, string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "modPrice",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "ownedLands",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "posLand",
+    values: [BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -68,26 +108,22 @@ interface MeetSHInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
-  decodeFunctionResult(
-    functionFragment: "addLocation",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "hasLocation",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "addLands", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "allLands", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "buyLand", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "changeType", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "landCount", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "landStart", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lastLight", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "lightLocation",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "locations", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "ownedLocations",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "lightLand", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "mintLand", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "modLand", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "modPrice", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "ownedLands", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "posLand", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -96,6 +132,7 @@ interface MeetSHInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
     "LightLand(uint256)": EventFragment;
@@ -105,6 +142,12 @@ interface MeetSHInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LightLand"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
 }
+
+export type LightLandEvent = TypedEvent<[BigNumber] & { index: BigNumber }>;
+
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string] & { previousOwner: string; newOwner: string }
+>;
 
 export class MeetSH extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -150,49 +193,103 @@ export class MeetSH extends BaseContract {
   interface: MeetSHInterface;
 
   functions: {
-    addLocation(
-      locs: {
-        lord: string;
+    addLands(
+      lands: {
+        host: string;
+        guests: string[];
         name: string;
-        pos: { x: BigNumberish; y: BigNumberish };
+        url: string;
+        typ: BigNumberish;
+        pos: { lat: BigNumberish; lng: BigNumberish };
+        price: BigNumberish;
       }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    hasLocation(
+    allLands(
       arg0: BigNumberish,
-      arg1: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<
+      [
+        string,
+        string,
+        string,
+        number,
+        [number, number] & { lat: number; lng: number },
+        BigNumber
+      ] & {
+        host: string;
+        name: string;
+        url: string;
+        typ: number;
+        pos: [number, number] & { lat: number; lng: number };
+        price: BigNumber;
+      }
+    >;
+
+    buyLand(
+      index: BigNumberish,
+      name: string,
+      url: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    changeType(
+      index: BigNumberish,
+      typ: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    landCount(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    landStart(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     lastLight(
       arg0: string,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { bNum: BigNumber; iLoc: BigNumber }>;
+    ): Promise<
+      [BigNumber, BigNumber] & { blkNum: BigNumber; locIdx: BigNumber }
+    >;
 
-    lightLocation(
-      pos: { x: BigNumberish; y: BigNumberish },
+    lightLand(
+      pos: { lat: BigNumberish; lng: BigNumberish },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    locations(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, string, [number, number] & { x: number; y: number }] & {
-        lord: string;
-        name: string;
-        pos: [number, number] & { x: number; y: number };
-      }
-    >;
+    mintLand(
+      pos: { lat: BigNumberish; lng: BigNumberish },
+      name: string,
+      url: string,
+      typ: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
-    ownedLocations(
+    modLand(
+      index: BigNumberish,
+      name: string,
+      url: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    modPrice(
+      index: BigNumberish,
+      price: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    ownedLands(
       arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
+
+    posLand(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -202,51 +299,107 @@ export class MeetSH extends BaseContract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    withdraw(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
-  addLocation(
-    locs: {
-      lord: string;
+  addLands(
+    lands: {
+      host: string;
+      guests: string[];
       name: string;
-      pos: { x: BigNumberish; y: BigNumberish };
+      url: string;
+      typ: BigNumberish;
+      pos: { lat: BigNumberish; lng: BigNumberish };
+      price: BigNumberish;
     }[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  hasLocation(
+  allLands(
     arg0: BigNumberish,
-    arg1: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  ): Promise<
+    [
+      string,
+      string,
+      string,
+      number,
+      [number, number] & { lat: number; lng: number },
+      BigNumber
+    ] & {
+      host: string;
+      name: string;
+      url: string;
+      typ: number;
+      pos: [number, number] & { lat: number; lng: number };
+      price: BigNumber;
+    }
+  >;
+
+  buyLand(
+    index: BigNumberish,
+    name: string,
+    url: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  changeType(
+    index: BigNumberish,
+    typ: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  landCount(overrides?: CallOverrides): Promise<BigNumber>;
+
+  landStart(overrides?: CallOverrides): Promise<BigNumber>;
 
   lastLight(
     arg0: string,
     overrides?: CallOverrides
-  ): Promise<[BigNumber, BigNumber] & { bNum: BigNumber; iLoc: BigNumber }>;
+  ): Promise<[BigNumber, BigNumber] & { blkNum: BigNumber; locIdx: BigNumber }>;
 
-  lightLocation(
-    pos: { x: BigNumberish; y: BigNumberish },
+  lightLand(
+    pos: { lat: BigNumberish; lng: BigNumberish },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  locations(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [string, string, [number, number] & { x: number; y: number }] & {
-      lord: string;
-      name: string;
-      pos: [number, number] & { x: number; y: number };
-    }
-  >;
+  mintLand(
+    pos: { lat: BigNumberish; lng: BigNumberish },
+    name: string,
+    url: string,
+    typ: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
-  ownedLocations(
+  modLand(
+    index: BigNumberish,
+    name: string,
+    url: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  modPrice(
+    index: BigNumberish,
+    price: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  ownedLands(
     arg0: string,
     arg1: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   owner(overrides?: CallOverrides): Promise<string>;
+
+  posLand(
+    arg0: BigNumberish,
+    arg1: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -257,44 +410,96 @@ export class MeetSH extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  withdraw(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
-    addLocation(
-      locs: {
-        lord: string;
+    addLands(
+      lands: {
+        host: string;
+        guests: string[];
         name: string;
-        pos: { x: BigNumberish; y: BigNumberish };
+        url: string;
+        typ: BigNumberish;
+        pos: { lat: BigNumberish; lng: BigNumberish };
+        price: BigNumberish;
       }[],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    hasLocation(
+    allLands(
       arg0: BigNumberish,
-      arg1: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<
+      [
+        string,
+        string,
+        string,
+        number,
+        [number, number] & { lat: number; lng: number },
+        BigNumber
+      ] & {
+        host: string;
+        name: string;
+        url: string;
+        typ: number;
+        pos: [number, number] & { lat: number; lng: number };
+        price: BigNumber;
+      }
+    >;
+
+    buyLand(
+      index: BigNumberish,
+      name: string,
+      url: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    changeType(
+      index: BigNumberish,
+      typ: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    landCount(overrides?: CallOverrides): Promise<BigNumber>;
+
+    landStart(overrides?: CallOverrides): Promise<BigNumber>;
 
     lastLight(
       arg0: string,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { bNum: BigNumber; iLoc: BigNumber }>;
+    ): Promise<
+      [BigNumber, BigNumber] & { blkNum: BigNumber; locIdx: BigNumber }
+    >;
 
-    lightLocation(
-      pos: { x: BigNumberish; y: BigNumberish },
+    lightLand(
+      pos: { lat: BigNumberish; lng: BigNumberish },
       overrides?: CallOverrides
     ): Promise<void>;
 
-    locations(
-      arg0: BigNumberish,
+    mintLand(
+      pos: { lat: BigNumberish; lng: BigNumberish },
+      name: string,
+      url: string,
+      typ: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<
-      [string, string, [number, number] & { x: number; y: number }] & {
-        lord: string;
-        name: string;
-        pos: [number, number] & { x: number; y: number };
-      }
-    >;
+    ): Promise<void>;
 
-    ownedLocations(
+    modLand(
+      index: BigNumberish,
+      name: string,
+      url: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    modPrice(
+      index: BigNumberish,
+      price: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    ownedLands(
       arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
@@ -302,18 +507,38 @@ export class MeetSH extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<string>;
 
+    posLand(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     transferOwnership(
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdraw(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
+    "LightLand(uint256)"(
+      index?: null
+    ): TypedEventFilter<[BigNumber], { index: BigNumber }>;
+
     LightLand(
       index?: null
     ): TypedEventFilter<[BigNumber], { index: BigNumber }>;
+
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): TypedEventFilter<
+      [string, string],
+      { previousOwner: string; newOwner: string }
+    >;
 
     OwnershipTransferred(
       previousOwner?: string | null,
@@ -325,34 +550,67 @@ export class MeetSH extends BaseContract {
   };
 
   estimateGas: {
-    addLocation(
-      locs: {
-        lord: string;
+    addLands(
+      lands: {
+        host: string;
+        guests: string[];
         name: string;
-        pos: { x: BigNumberish; y: BigNumberish };
+        url: string;
+        typ: BigNumberish;
+        pos: { lat: BigNumberish; lng: BigNumberish };
+        price: BigNumberish;
       }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    hasLocation(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
+    allLands(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    buyLand(
+      index: BigNumberish,
+      name: string,
+      url: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    lastLight(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    lightLocation(
-      pos: { x: BigNumberish; y: BigNumberish },
+    changeType(
+      index: BigNumberish,
+      typ: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    locations(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+    landCount(overrides?: CallOverrides): Promise<BigNumber>;
+
+    landStart(overrides?: CallOverrides): Promise<BigNumber>;
+
+    lastLight(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    lightLand(
+      pos: { lat: BigNumberish; lng: BigNumberish },
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    ownedLocations(
+    mintLand(
+      pos: { lat: BigNumberish; lng: BigNumberish },
+      name: string,
+      url: string,
+      typ: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    modLand(
+      index: BigNumberish,
+      name: string,
+      url: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    modPrice(
+      index: BigNumberish,
+      price: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    ownedLands(
       arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
@@ -360,6 +618,12 @@ export class MeetSH extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    posLand(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -368,40 +632,80 @@ export class MeetSH extends BaseContract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    withdraw(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    addLocation(
-      locs: {
-        lord: string;
+    addLands(
+      lands: {
+        host: string;
+        guests: string[];
         name: string;
-        pos: { x: BigNumberish; y: BigNumberish };
+        url: string;
+        typ: BigNumberish;
+        pos: { lat: BigNumberish; lng: BigNumberish };
+        price: BigNumberish;
       }[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    hasLocation(
+    allLands(
       arg0: BigNumberish,
-      arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    buyLand(
+      index: BigNumberish,
+      name: string,
+      url: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    changeType(
+      index: BigNumberish,
+      typ: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    landCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    landStart(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     lastLight(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    lightLocation(
-      pos: { x: BigNumberish; y: BigNumberish },
+    lightLand(
+      pos: { lat: BigNumberish; lng: BigNumberish },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    locations(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+    mintLand(
+      pos: { lat: BigNumberish; lng: BigNumberish },
+      name: string,
+      url: string,
+      typ: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    ownedLocations(
+    modLand(
+      index: BigNumberish,
+      name: string,
+      url: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    modPrice(
+      index: BigNumberish,
+      price: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    ownedLands(
       arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
@@ -409,12 +713,22 @@ export class MeetSH extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    posLand(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     transferOwnership(
       newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdraw(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

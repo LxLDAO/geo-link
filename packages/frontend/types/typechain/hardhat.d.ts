@@ -21,6 +21,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MeetSH__factory>;
     getContractFactory(
+      name: "MeetSH",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MeetSH__factory>;
+    getContractFactory(
       name: "Multicall",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Multicall__factory>;
@@ -28,6 +32,32 @@ declare module "hardhat/types/runtime" {
       name: "YourContract",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.YourContract__factory>;
+
+    getContractAt(
+      name: "Ownable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Ownable>;
+    getContractAt(
+      name: "MeetSH",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MeetSH>;
+    getContractAt(
+      name: "MeetSH",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MeetSH>;
+    getContractAt(
+      name: "Multicall",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Multicall>;
+    getContractAt(
+      name: "YourContract",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.YourContract>;
 
     // default types
     getContractFactory(
@@ -39,5 +69,10 @@ declare module "hardhat/types/runtime" {
       bytecode: ethers.utils.BytesLike,
       signer?: ethers.Signer
     ): Promise<ethers.ContractFactory>;
+    getContractAt(
+      nameOrAbi: string | any[],
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<ethers.Contract>;
   }
 }
