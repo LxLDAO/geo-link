@@ -74,7 +74,7 @@ function HomeIndex(): JSX.Element {
 
   function lightLands(start: number, count: number) {
     try {
-      await meetContract.lightLand([pos.lat, pos.lng])
+      meetContract.lightLand([pos.lat, pos.lng])
     } catch(e) {
       console.log(e)
     }
@@ -120,7 +120,7 @@ function HomeIndex(): JSX.Element {
               )
             } */}
             <Marker position={{ longitude: pos.lng, latitude: pos.lat }}>
-              <div style={styleC} onClick="lightLand">{1}</div>
+              <div style={styleC}>{1}</div>
             </Marker>
           </Map>
         </Box>
