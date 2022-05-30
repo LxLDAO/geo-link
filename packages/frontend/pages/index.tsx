@@ -1,15 +1,27 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import Meet from '../artifacts/contracts/Meet.sol/MeetSH.json'
-import Multi from '../artifacts/contracts/Multicall.sol/Multicall.json'
-import { Box } from '@chakra-ui/react'
-import { Map, Marker, PluginConfig, PluginList } from 'react-amap'
+// import Multi from '../artifacts/contracts/Multicall.sol/Multicall.json'
+import { Box, Button,Lorem, Stack, useColorModeValue, useDisclosure } from '@chakra-ui/react'
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+} from '@chakra-ui/react'
+import { Map, Marker, Markers, PluginConfig, PluginList } from 'react-amap'
 import { useContract, useProvider, useSigner } from 'wagmi'
 
 import Layout from '../components/layout/Layout'
+import InfoCard from '../components/Info'
 
 const mapPlugins: Array<PluginList | PluginConfig> = ['ToolBar', 'Scale']
 
-const RINKEY_CONTRACT_ADDRESS = '0xb8ec9b6798275FDea556CB0119b815B26Fa52898'
+const RINKEY_CONTRACT_ADDRESS = '0x37C32E79d084131E04c5fc860EA5e94C79436d0b'
+
+// [["0x8af8c26D62954B5CA17B7EEA5231b0F9893aDD9f", [], "shoping", "https://baike.baidu.com/pic/.shop/19680211/1/0b46f21fbe096b63d50577bf0b338744eaf8acc4?fr=lemma&ct=single", 1, [114122, 22627], 1],["0x8af8c26D62954B5CA17B7EEA5231b0F9893aDD9f", [], "meeting", "https://pica.zhimg.com/v2-4cc4eab1aafec727cccc8a573fa4a869_1440w.jpg?source=172ae18b", 4, [114127, 22624], 2],["0x8af8c26D62954B5CA17B7EEA5231b0F9893aDD9f", [], "grass", "https://gd-hbimg.huaban.com/f35fa8035787f65662fe63a6819b1ca9bfb3bbf03930c7-nGwM3w_fw658/format/webp", 8, [114129, 22619], 3]]
 
 enum LandType {
   WORK,
@@ -28,8 +40,8 @@ enum LandType {
 }
 
 type Position = {
-  lat: number
   lng: number
+  lat: number
 }
 
 type Land = {
@@ -69,8 +81,11 @@ function HomeIndex(): JSX.Element {
   //   signerOrProvider: signer,
   // })
 
-  const [pos, setPos] = useState({ lat: 22.619, lng: 114.129 })
+  const [selected, setSelected] = useState(-1)
+  const [pos, setPos] = useState({ lng: 114.129, lat: 22.619 })
   const [lands, setLands] = useState<Land[]>([])
+  const [makers, setMakers] = useState([])
+  const [has, setHas] = useState(false)
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -78,7 +93,7 @@ function HomeIndex(): JSX.Element {
         (p) => {
           // setPos({ lng: p.coords.longitude, lat: p.coords.latitude })
           // setPos({ lat: 114.129, lng: 22.619 })
-          setPos({ lat: 22.619, lng: 114.129 })
+          setPos({ lng: 114.129, lat: 22.619 })
         },
         () => {
           // alert('获取定位失败！')
@@ -90,11 +105,24 @@ function HomeIndex(): JSX.Element {
   const getLands = useCallback(
     async (start: number, count: number) => {
       const lands = []
+      const markers = []
       for (let i = start; i <= count; i++) {
-        const land = await meetContract.allLands(i)
+        const land: Land = await meetContract.allLands(i)
         lands.push(land)
+        markers.push({index: i-start, position: { longitude: land.pos.lng / 1000, latitude: land.pos.lat / 1000 }})
       }
       setLands(lands)
+      console.log(markers)
+      setMakers(markers)
+    },
+    [meetContract]
+  )
+
+  const hasLand = useCallback(
+    async (lng: number, lat: number) => {
+      const has: boolean = await meetContract.hasLand([lng, lat])
+      console.log(pos, has)
+      setHas(has)
     },
     [meetContract]
   )
@@ -104,13 +132,14 @@ function HomeIndex(): JSX.Element {
       return
     }
 
-    ;(async () => {
+    (async () => {
       try {
         const start = await meetContract.landStart()
         const count = await meetContract.landCount()
         // console.log(start, count)
         // 获取所有地块
         getLands(start, count)
+        hasLand(Math.round(pos.lng * 1000), Math.round(pos.lat * 1000))
       } catch (error) {
         console.log('🚀 ~ file: index.tsx ~ line 87 ~ ; ~ error', error)
       }
@@ -123,58 +152,52 @@ function HomeIndex(): JSX.Element {
       // For some reason we use inverse latitude and longitude here
       const longitude = Math.round(pos.lat * 1000)
       const latitude = Math.round(pos.lng * 1000)
+
       meetContract.lightLand([longitude, latitude])
     } catch (e) {
       console.log(e)
     }
   }
 
+  function toggleSelected(index) {
+    if (selected == index) {
+      setSelected(-1);
+    } else {
+      setSelected(index)
+    } 
+    console.log(index)
+  }
+
+  const markerEvent = {
+    click: (e, marker) => {
+      toggleSelected(marker.getExtData().index)
+    }
+  }
+
+
   return (
     <Layout>
       <Box width="100vw" height="100vh" position="relative">
         <Box position="absolute" left="0" right="0" top="0" bottom="0">
+            { 
+              selected >= 0 &&
+              InfoCard(lands[selected])
+            }
           <Map
             amapkey={'788e08def03f95c670944fe2c78fa76f'}
             center={pos}
             zoom={14}
             plugins={mapPlugins}
           >
-            {/* cards index.less */}
-            {
-              // 如果选中，则在上面显示一个地块信息
-              // selected > 0 && (
-              // <div class="card">
-              //   <div class="avatar"><img src={lands[i].url}></></div>
-              //   <div class="card-content">
-              //     <div class="card-header">
-              //       <p class="card-header-title">{lands[i].name}</p>
-              //       <p class="card-header-price">{lands[i].price}</p>
-              //     </div>
-              //     <div class="card-body">
-              //       lands[i].guests.map(
-              //         (friend) => (
-              //           <p class="card-friends">friend.substr(2,4)</p>
-              //         )
-              //       )
-              //     </div>
-              //   </div>
-              // </div>
-              // )
-            }
 
             {/* 地块显示, onclick如果成功显示卡片 */}
-            {!!lands?.length &&
-              lands.map(({ name, pos }) => (
-                <Marker
-                  key={name}
-                  position={{
-                    longitude: pos.lat / 1000,
-                    latitude: pos.lng / 1000,
-                  }}
-                >
-                  {/* <div style={styleC}>{name}</div> */}
-                </Marker>
-              ))}
+            {
+              <Markers
+                markers={makers}
+                events={markerEvent}
+                useCluster
+              ></Markers>
+            }
             {
               // 查看地图可设置 114.129 22.619, onclick 可打卡 lightLand
             }

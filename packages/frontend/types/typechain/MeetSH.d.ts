@@ -25,7 +25,10 @@ interface MeetSHInterface extends ethers.utils.Interface {
     "addLands(tuple[])": FunctionFragment;
     "allLands(uint256)": FunctionFragment;
     "buyLand(uint256,string,string)": FunctionFragment;
+    "center((int32,int32))": FunctionFragment;
     "changeType(uint256,uint8)": FunctionFragment;
+    "distance((int32,int32),(int32,int32))": FunctionFragment;
+    "hasLand((int32,int32))": FunctionFragment;
     "landCount()": FunctionFragment;
     "landStart()": FunctionFragment;
     "lastLight(address)": FunctionFragment;
@@ -33,8 +36,8 @@ interface MeetSHInterface extends ethers.utils.Interface {
     "mintLand((int32,int32),string,string,uint8)": FunctionFragment;
     "modLand(uint256,string,string)": FunctionFragment;
     "modPrice(uint256,uint256)": FunctionFragment;
-    "ownedLands(address,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
+    "passLands(address,uint256)": FunctionFragment;
     "posLand(int32,int32)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
@@ -50,7 +53,7 @@ interface MeetSHInterface extends ethers.utils.Interface {
         name: string;
         url: string;
         typ: BigNumberish;
-        pos: { lat: BigNumberish; lng: BigNumberish };
+        pos: { lng: BigNumberish; lat: BigNumberish };
         price: BigNumberish;
       }[]
     ]
@@ -64,20 +67,35 @@ interface MeetSHInterface extends ethers.utils.Interface {
     values: [BigNumberish, string, string]
   ): string;
   encodeFunctionData(
+    functionFragment: "center",
+    values: [{ lng: BigNumberish; lat: BigNumberish }]
+  ): string;
+  encodeFunctionData(
     functionFragment: "changeType",
     values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "distance",
+    values: [
+      { lng: BigNumberish; lat: BigNumberish },
+      { lng: BigNumberish; lat: BigNumberish }
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hasLand",
+    values: [{ lng: BigNumberish; lat: BigNumberish }]
   ): string;
   encodeFunctionData(functionFragment: "landCount", values?: undefined): string;
   encodeFunctionData(functionFragment: "landStart", values?: undefined): string;
   encodeFunctionData(functionFragment: "lastLight", values: [string]): string;
   encodeFunctionData(
     functionFragment: "lightLand",
-    values: [{ lat: BigNumberish; lng: BigNumberish }]
+    values: [{ lng: BigNumberish; lat: BigNumberish }]
   ): string;
   encodeFunctionData(
     functionFragment: "mintLand",
     values: [
-      { lat: BigNumberish; lng: BigNumberish },
+      { lng: BigNumberish; lat: BigNumberish },
       string,
       string,
       BigNumberish
@@ -91,11 +109,11 @@ interface MeetSHInterface extends ethers.utils.Interface {
     functionFragment: "modPrice",
     values: [BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "ownedLands",
+    functionFragment: "passLands",
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "posLand",
     values: [BigNumberish, BigNumberish]
@@ -113,7 +131,10 @@ interface MeetSHInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "addLands", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "allLands", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "buyLand", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "center", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "changeType", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "distance", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "hasLand", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "landCount", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "landStart", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lastLight", data: BytesLike): Result;
@@ -121,8 +142,8 @@ interface MeetSHInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "mintLand", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "modLand", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "modPrice", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "ownedLands", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "passLands", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "posLand", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -200,7 +221,7 @@ export class MeetSH extends BaseContract {
         name: string;
         url: string;
         typ: BigNumberish;
-        pos: { lat: BigNumberish; lng: BigNumberish };
+        pos: { lng: BigNumberish; lat: BigNumberish };
         price: BigNumberish;
       }[],
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -215,14 +236,14 @@ export class MeetSH extends BaseContract {
         string,
         string,
         number,
-        [number, number] & { lat: number; lng: number },
+        [number, number] & { lng: number; lat: number },
         BigNumber
       ] & {
         host: string;
         name: string;
         url: string;
         typ: number;
-        pos: [number, number] & { lat: number; lng: number };
+        pos: [number, number] & { lng: number; lat: number };
         price: BigNumber;
       }
     >;
@@ -234,11 +255,27 @@ export class MeetSH extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    center(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<[number, number] & { lx: number; ly: number }>;
+
     changeType(
       index: BigNumberish,
       typ: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    distance(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      lpos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<[number] & { dist: number }>;
+
+    hasLand(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<[boolean] & { has: boolean }>;
 
     landCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -252,12 +289,12 @@ export class MeetSH extends BaseContract {
     >;
 
     lightLand(
-      pos: { lat: BigNumberish; lng: BigNumberish },
+      pos: { lng: BigNumberish; lat: BigNumberish },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     mintLand(
-      pos: { lat: BigNumberish; lng: BigNumberish },
+      pos: { lng: BigNumberish; lat: BigNumberish },
       name: string,
       url: string,
       typ: BigNumberish,
@@ -277,13 +314,13 @@ export class MeetSH extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    ownedLands(
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
+    passLands(
       arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    owner(overrides?: CallOverrides): Promise<[string]>;
 
     posLand(
       arg0: BigNumberish,
@@ -312,7 +349,7 @@ export class MeetSH extends BaseContract {
       name: string;
       url: string;
       typ: BigNumberish;
-      pos: { lat: BigNumberish; lng: BigNumberish };
+      pos: { lng: BigNumberish; lat: BigNumberish };
       price: BigNumberish;
     }[],
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -327,14 +364,14 @@ export class MeetSH extends BaseContract {
       string,
       string,
       number,
-      [number, number] & { lat: number; lng: number },
+      [number, number] & { lng: number; lat: number },
       BigNumber
     ] & {
       host: string;
       name: string;
       url: string;
       typ: number;
-      pos: [number, number] & { lat: number; lng: number };
+      pos: [number, number] & { lng: number; lat: number };
       price: BigNumber;
     }
   >;
@@ -346,11 +383,27 @@ export class MeetSH extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  center(
+    pos: { lng: BigNumberish; lat: BigNumberish },
+    overrides?: CallOverrides
+  ): Promise<[number, number] & { lx: number; ly: number }>;
+
   changeType(
     index: BigNumberish,
     typ: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  distance(
+    pos: { lng: BigNumberish; lat: BigNumberish },
+    lpos: { lng: BigNumberish; lat: BigNumberish },
+    overrides?: CallOverrides
+  ): Promise<number>;
+
+  hasLand(
+    pos: { lng: BigNumberish; lat: BigNumberish },
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   landCount(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -362,12 +415,12 @@ export class MeetSH extends BaseContract {
   ): Promise<[BigNumber, BigNumber] & { blkNum: BigNumber; locIdx: BigNumber }>;
 
   lightLand(
-    pos: { lat: BigNumberish; lng: BigNumberish },
+    pos: { lng: BigNumberish; lat: BigNumberish },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   mintLand(
-    pos: { lat: BigNumberish; lng: BigNumberish },
+    pos: { lng: BigNumberish; lat: BigNumberish },
     name: string,
     url: string,
     typ: BigNumberish,
@@ -387,13 +440,13 @@ export class MeetSH extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  ownedLands(
+  owner(overrides?: CallOverrides): Promise<string>;
+
+  passLands(
     arg0: string,
     arg1: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  owner(overrides?: CallOverrides): Promise<string>;
 
   posLand(
     arg0: BigNumberish,
@@ -422,7 +475,7 @@ export class MeetSH extends BaseContract {
         name: string;
         url: string;
         typ: BigNumberish;
-        pos: { lat: BigNumberish; lng: BigNumberish };
+        pos: { lng: BigNumberish; lat: BigNumberish };
         price: BigNumberish;
       }[],
       overrides?: CallOverrides
@@ -437,14 +490,14 @@ export class MeetSH extends BaseContract {
         string,
         string,
         number,
-        [number, number] & { lat: number; lng: number },
+        [number, number] & { lng: number; lat: number },
         BigNumber
       ] & {
         host: string;
         name: string;
         url: string;
         typ: number;
-        pos: [number, number] & { lat: number; lng: number };
+        pos: [number, number] & { lng: number; lat: number };
         price: BigNumber;
       }
     >;
@@ -456,11 +509,27 @@ export class MeetSH extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    center(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<[number, number] & { lx: number; ly: number }>;
+
     changeType(
       index: BigNumberish,
       typ: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    distance(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      lpos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<number>;
+
+    hasLand(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     landCount(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -474,12 +543,12 @@ export class MeetSH extends BaseContract {
     >;
 
     lightLand(
-      pos: { lat: BigNumberish; lng: BigNumberish },
+      pos: { lng: BigNumberish; lat: BigNumberish },
       overrides?: CallOverrides
     ): Promise<void>;
 
     mintLand(
-      pos: { lat: BigNumberish; lng: BigNumberish },
+      pos: { lng: BigNumberish; lat: BigNumberish },
       name: string,
       url: string,
       typ: BigNumberish,
@@ -499,13 +568,13 @@ export class MeetSH extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    ownedLands(
+    owner(overrides?: CallOverrides): Promise<string>;
+
+    passLands(
       arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    owner(overrides?: CallOverrides): Promise<string>;
 
     posLand(
       arg0: BigNumberish,
@@ -557,7 +626,7 @@ export class MeetSH extends BaseContract {
         name: string;
         url: string;
         typ: BigNumberish;
-        pos: { lat: BigNumberish; lng: BigNumberish };
+        pos: { lng: BigNumberish; lat: BigNumberish };
         price: BigNumberish;
       }[],
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -572,10 +641,26 @@ export class MeetSH extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    center(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     changeType(
       index: BigNumberish,
       typ: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    distance(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      lpos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    hasLand(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     landCount(overrides?: CallOverrides): Promise<BigNumber>;
@@ -585,12 +670,12 @@ export class MeetSH extends BaseContract {
     lastLight(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     lightLand(
-      pos: { lat: BigNumberish; lng: BigNumberish },
+      pos: { lng: BigNumberish; lat: BigNumberish },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     mintLand(
-      pos: { lat: BigNumberish; lng: BigNumberish },
+      pos: { lng: BigNumberish; lat: BigNumberish },
       name: string,
       url: string,
       typ: BigNumberish,
@@ -610,13 +695,13 @@ export class MeetSH extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    ownedLands(
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    passLands(
       arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     posLand(
       arg0: BigNumberish,
@@ -646,7 +731,7 @@ export class MeetSH extends BaseContract {
         name: string;
         url: string;
         typ: BigNumberish;
-        pos: { lat: BigNumberish; lng: BigNumberish };
+        pos: { lng: BigNumberish; lat: BigNumberish };
         price: BigNumberish;
       }[],
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -664,10 +749,26 @@ export class MeetSH extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    center(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     changeType(
       index: BigNumberish,
       typ: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    distance(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      lpos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    hasLand(
+      pos: { lng: BigNumberish; lat: BigNumberish },
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     landCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -680,12 +781,12 @@ export class MeetSH extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     lightLand(
-      pos: { lat: BigNumberish; lng: BigNumberish },
+      pos: { lng: BigNumberish; lat: BigNumberish },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     mintLand(
-      pos: { lat: BigNumberish; lng: BigNumberish },
+      pos: { lng: BigNumberish; lat: BigNumberish },
       name: string,
       url: string,
       typ: BigNumberish,
@@ -705,13 +806,13 @@ export class MeetSH extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    ownedLands(
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    passLands(
       arg0: string,
       arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     posLand(
       arg0: BigNumberish,

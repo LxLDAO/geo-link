@@ -19,8 +19,8 @@ enum LandType {
 }
 
 struct Position {
-    int32 lat; // 111. 111
-    int32 lng; 
+    int32 lng; // 111. 111
+    int32 lat; 
 }
 
 struct Last {
@@ -29,7 +29,7 @@ struct Last {
 }
 
 contract MeetSH is Ownable{
-    mapping(address => uint[]) public ownedLands;
+    mapping(address => uint[]) public passLands;
     mapping(address => Last) public lastLight;
     
     mapping(int32 => mapping(int32 => uint)) public posLand; // lat, lng => locIdx
@@ -56,16 +56,32 @@ contract MeetSH is Ownable{
     // if 8-12, return 5
     // if 13-17, return 10
     // if 18-22, return 15 
-    function getBound(int32 x) internal returns (int32 lx) {
+    function getBound(int32 x) internal pure returns (int32 lx) {
         int32 z = x % 10;
-        return z<3 ? x-z-5 : z>7 ? x-z+5 : x-z;
+        return z<3 ? x-z : z>7 ? x-z+10 : x-z+5;
+    }
+
+    function center(Position memory pos) public pure returns (int32 lx, int32 ly) {
+        int32 lx = getBound(pos.lng);
+        int32 ly = getBound(pos.lat);
+        return (lx, ly);
+    }
+
+    function hasLand(Position memory pos) public view returns (bool has) {
+        (int32 lx, int32 ly) = center(pos);
+        return posLand[lx][ly] > 0;
+    }
+
+    function distance(Position memory pos, Position memory lpos) public pure returns (uint32 dist) {
+        int32 dx = pos.lng > lpos.lng ? pos.lng - lpos.lng : lpos.lng - pos.lng;
+        int32 dy = pos.lat > lpos.lat ? pos.lat - lpos.lat : lpos.lat - pos.lat;
+        return uint32(dx + dy);
     }
 
     function addLands(Land[] calldata lands) public onlyOwner {
         landStart = allLands.length;
         for (uint i=0; i<lands.length; i++) {
-            int32 lx = getBound(lands[i].pos.lat);
-            int32 ly = getBound(lands[i].pos.lng);
+            (int32 lx, int32 ly) = center(lands[i].pos);
             if (posLand[lx][ly] == 0) {
                 posLand[lx][ly] = allLands.length;
                 allLands.push(lands[i]);
@@ -79,14 +95,9 @@ contract MeetSH is Ownable{
          allLands[index].typ = typ;
     }
 
-    function withdraw() public onlyOwner {
-        payable(owner()).transfer(address(this).balance);
-    }
-
     function mintLand(Position calldata pos, string memory name, string memory url, LandType typ) public payable {
         require(msg.value >= 1 ether, "Price too low!");
-        int32 lx = getBound(pos.lat);
-        int32 ly = getBound(pos.lng);
+        (int32 lx, int32 ly) = center(pos);
         require(posLand[lx][ly] == 0, "Already has land!"); 
         posLand[lx][ly] = allLands.length;
         allLands.push(
@@ -121,25 +132,26 @@ contract MeetSH is Ownable{
 
 
     function lightLand(Position calldata pos) public {
-        int32 lx = getBound(pos.lat);
-        int32 ly = getBound(pos.lng);
+        (int32 lx, int32 ly) = center(pos);
         uint index = posLand[lx][ly];
-        require(index != 0, "No land"); 
+        require(index > 0, "No Land"); 
 
         Last memory last = lastLight[msg.sender];
         if (last.blkNum != 0) {
-            Position memory lpos = allLands[last.locIdx].pos;
-            int32 dx = pos.lat > lpos.lat ? pos.lat - lpos.lat : lpos.lat - pos.lat;
-            int32 dy = pos.lng > lpos.lng ? pos.lng - lpos.lng : lpos.lng - pos.lng;
-            require(block.number - last.blkNum > uint32(dx + dx), "Too short");
+            uint32 dist = distance(pos, allLands[last.locIdx].pos);
+            require(block.number - last.blkNum > dist, "Too short");
         }
 
-        ownedLands[msg.sender].push(index);
+        passLands[msg.sender].push(index);
         allLands[index].guests.push(msg.sender);
         lastLight[msg.sender] = Last(block.number, index);
         emit LightLand(index);
     }
 
     receive() external payable{
+    }
+
+    function withdraw() public onlyOwner {
+        payable(owner()).transfer(address(this).balance);
     }
 }

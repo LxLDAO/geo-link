@@ -21,10 +21,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MeetSH__factory>;
     getContractFactory(
-      name: "MeetSH",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MeetSH__factory>;
-    getContractFactory(
       name: "Multicall",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Multicall__factory>;
@@ -38,11 +34,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Ownable>;
-    getContractAt(
-      name: "MeetSH",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.MeetSH>;
     getContractAt(
       name: "MeetSH",
       address: string,
