@@ -11,9 +11,9 @@ import {
 import { formatEther } from '@ethersproject/units'
 
 const formatAddress = (address: string) =>
-  `${address.slice(0, 6)}…${address.slice(38, 42)}`
+  `${address.slice(0, 6)}`
 
-export default function InfoCard(land) {
+export default function InfoCard(land, count): JSX.Element {
   if (land) {
     return (
       <Center
@@ -43,9 +43,6 @@ export default function InfoCard(land) {
                     {land.name}
                   </Text>
                   <Stack direction="row" display="inline-flex">
-                    <Text fontSize="sm" fontWeight="bold">
-                      Hosted by:
-                    </Text>
                     <Text
                       fontSize="sm"
                       color={useColorModeValue('gray.700', 'gray.400')}
@@ -59,10 +56,14 @@ export default function InfoCard(land) {
 
               <Stack direction="row" w="100%" align="flex-end">
                 <Text fontSize="sm" fontWeight="bold">
-                  Guests:
+                  Guests: {count}
                 </Text>
-                <Badge>0xaa</Badge> <Badge>0xbb</Badge>
-                <Badge>0xcc</Badge>
+                {
+                  // loop count times
+                  Array.from({ length: count }, (_, i) => (
+                    <Badge>0xaa</Badge>
+                  ))
+                }
               </Stack>
             </Stack>
           </Flex>

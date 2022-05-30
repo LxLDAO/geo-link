@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 struct Land {
     address host;
-    address []guests;
     string  name; // name or store
     string  url;  // your avatar or link
     LandType typ;
@@ -28,14 +27,21 @@ struct Last {
     uint locIdx;
 }
 
+struct Activity {
+    uint blkNum;
+    uint name;
+}
+
 contract MeetSH is Ownable{
-    mapping(address => uint[]) public passLands;
-    mapping(address => Last) public lastLight;
-    
-    mapping(int32 => mapping(int32 => uint)) public posLand; // lat, lng => locIdx
+    Activity[] public allActivities;
     Land[] public allLands;
     uint public landStart;
-    uint public landCount;
+    uint public landEnd;
+
+    mapping(int32 => mapping(int32 => uint)) public posLand; // lat, lng => locIdx
+    mapping(address => uint[]) public passLands;
+    mapping(uint => address[]) public landGuests;
+    mapping(address => Last) public lastLight;
 
     event LightLand(uint index);
 
@@ -44,7 +50,6 @@ contract MeetSH is Ownable{
         allLands.push(
             Land(
                 msg.sender, 
-                new address[](0),
                 "Meet Genesis", 
                 "meet.xyz", 
                 LandType.MEETING, 
@@ -53,9 +58,21 @@ contract MeetSH is Ownable{
             ));
     }
 
-    // if 8-12, return 5
-    // if 13-17, return 10
-    // if 18-22, return 15 
+    function passLandCount(address addr) public view returns (uint) {
+        return passLands[addr].length;
+    }
+
+    function landGuestCount(uint index) public view returns (uint) {
+        return landGuests[index].length;
+    }
+
+    function activityCount(uint index) public view returns (uint) {
+        return allActivities.length;
+    }
+
+    // if 8-12, return 10
+    // if 13-17, return 15
+    // if 18-22, return 20
     function getBound(int32 x) internal pure returns (int32 lx) {
         int32 z = x % 10;
         return z<3 ? x-z : z>7 ? x-z+10 : x-z+5;
@@ -87,11 +104,11 @@ contract MeetSH is Ownable{
                 allLands.push(lands[i]);
             }
         }
-        landCount = allLands.length - 1;
+        landEnd = allLands.length;
     }
 
     function changeType(uint index, LandType typ) public onlyOwner {
-        require(landCount >= index, "Index too big!");
+        require(landEnd >= index, "Index too big!");
          allLands[index].typ = typ;
     }
 
@@ -101,14 +118,13 @@ contract MeetSH is Ownable{
         require(posLand[lx][ly] == 0, "Already has land!"); 
         posLand[lx][ly] = allLands.length;
         allLands.push(
-            Land(msg.sender, new address[](0),
-                name, url, typ, pos, 2 ether
-            ));
-        landCount = allLands.length - 1;
+            Land(msg.sender, name, url, typ, pos, 2 ether)
+            );
+        landEnd = allLands.length;
     }
 
     function buyLand(uint index, string memory name, string memory url) public payable {
-        require(landCount >= index, "Index too big!");
+        require(landEnd >= index, "Index too big!");
         require(msg.value >= allLands[index].price, "Price too low!");
         payable(allLands[index].host).transfer(msg.value * 9 / 10); // transfer
         allLands[index].host = msg.sender;
@@ -118,14 +134,14 @@ contract MeetSH is Ownable{
     }
 
     function modLand(uint index, string memory name, string memory url) public {
-        require(landCount >= index, "Index too big!");
+        require(landEnd >= index, "Index too big!");
         require(allLands[index].host == msg.sender, "Only host can modify!");
         allLands[index].name = name;
         allLands[index].url = url;
     }
 
     function modPrice(uint index, uint price) public {
-        require(landCount >= index, "Index too big!");
+        require(landEnd >= index, "Index too big!");
         require(allLands[index].host == msg.sender, "Only host can modify!");
         allLands[index].price = price;
     }
@@ -143,7 +159,7 @@ contract MeetSH is Ownable{
         }
 
         passLands[msg.sender].push(index);
-        allLands[index].guests.push(msg.sender);
+        landGuests[index].push(msg.sender);
         lastLight[msg.sender] = Last(block.number, index);
         emit LightLand(index);
     }
