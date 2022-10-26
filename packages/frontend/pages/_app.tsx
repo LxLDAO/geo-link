@@ -16,7 +16,7 @@ import { useApollo } from '../lib/apolloClient'
 export const INFURA_ID = process.env.NEXT_PUBLIC_INFURA_ID
 
 const { chains, provider } = configureChains(
-  [chain.mainnet, chain.kovan, chain.rinkeby, chain.ropsten],
+  [chain.mainnet, chain.kovan, chain.rinkeby, chain.ropsten, chain.goerli],
   [
     apiProvider.alchemy(process.env.NEXT_PUBLIC_ALCHEMY_ID),
     apiProvider.fallback(),

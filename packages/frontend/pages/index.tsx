@@ -10,7 +10,8 @@ import InfoCard from '../components/Info'
 
 const mapPlugins: Array<PluginList | PluginConfig> = ['ToolBar', 'Scale']
 
-const RINKEY_CONTRACT_ADDRESS = '0x45b571aF38e5650E74eC7D55E604D945FEdE5FCD'
+// const RINKEY_CONTRACT_ADDRESS = '0x45b571aF38e5650E74eC7D55E604D945FEdE5FCD'
+const GOERLI_CONTRACT_ADDRESS = '0x1145c547CbFfE2D24cCfA0fE10938232062bc036';
 
 // [["0x8af8c26D62954B5CA17B7EEA5231b0F9893aDD9f", "shoping", "https://baike.baidu.com/pic/.shop/19680211/1/0b46f21fbe096b63d50577bf0b338744eaf8acc4?fr=lemma&ct=single", 1, [114122, 22627], 1000000000000],["0x8af8c26D62954B5CA17B7EEA5231b0F9893aDD9f", "meeting", "https://pica.zhimg.com/v2-4cc4eab1aafec727cccc8a573fa4a869_1440w.jpg?source=172ae18b", 4, [114127, 22624], 2000000000000],["0x8af8c26D62954B5CA17B7EEA5231b0F9893aDD9f", "grass", "https://gd-hbimg.huaban.com/f35fa8035787f65662fe63a6819b1ca9bfb3bbf03930c7-nGwM3w_fw658/format/webp", 8, [114129, 22619], 3000000000000]]
 
@@ -60,7 +61,7 @@ function HomeIndex(): JSX.Element {
   const { data: signer } = useSigner()
   const provider = useProvider()
   const meetContract = useContract({
-    addressOrName: RINKEY_CONTRACT_ADDRESS,
+    addressOrName: GOERLI_CONTRACT_ADDRESS,
     contractInterface: Meet.abi,
     signerOrProvider: signer ?? provider,
   })
@@ -79,13 +80,17 @@ function HomeIndex(): JSX.Element {
   const [has, setHas] = useState(false)
   const [guests, setGuests] = useState(0)
 
+
+  // { lng: 114.120, lat: 22.625 }
+  // { lng: 114.125, lat: 22.625 }
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (p) => {
           // setPos({ lng: p.coords.longitude, lat: p.coords.latitude })
-          // setPos({ lat: 114.129, lng: 22.619 })
-          setPos({ lng: 114.129, lat: 22.619 })
+          setPos({ lng: 114.120, lat: 22.625 })
+          //setPos({ lng: 114.125, lat: 22.625 })
         },
         () => {
           // alert('获取定位失败！')
@@ -101,7 +106,7 @@ function HomeIndex(): JSX.Element {
       for (let i = start; i < end; i++) {
         const land: Land = await meetContract.allLands(i)
         lands.push(land)
-        markers.push({index: i-start, position: { longitude: land.pos.lng / 1000, latitude: land.pos.lat / 1000 }})
+        markers.push({key: i, index: i-start, position: { longitude: land.pos.lng / 1000, latitude: land.pos.lat / 1000 }})
       }
       setSt(start.toNumber())
       setLands(lands)
@@ -191,7 +196,7 @@ function HomeIndex(): JSX.Element {
           <Map
             amapkey={'788e08def03f95c670944fe2c78fa76f'}
             center={pos}
-            zoom={14}
+            zoom={15}
             plugins={mapPlugins}
           >
 
@@ -207,12 +212,8 @@ function HomeIndex(): JSX.Element {
               // 查看地图可设置 114.129 22.619, onclick 可打卡 lightLand
             }
             <Marker position={{ latitude: pos.lat, longitude: pos.lng }}>
-              <div style={styleC} >
+              <div style={styleC} onClick={lightLand} >
               </div>
-              {
-                has && 
-                <Button colorScheme='red' size='xs' onClick={lightLand}>Check</Button>
-              }
               
             </Marker>
           </Map>
